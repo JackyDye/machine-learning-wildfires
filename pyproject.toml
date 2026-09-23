@@ -1,0 +1,32 @@
+[project]
+name = "machine-learning-wildfires"
+version = "0.1.0"
+description = "Predicciones de incendios forestales"
+authors = [
+    {name = "Augusto Valles",email = "augusto.valles321@gmail.com"}
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas (>=3.0.6,<4.0.0)",
+    "matplotlib (>=3.11.2,<4.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)",
+    "scikit-learn (>=1.9.1,<2.0.0)",
+    "kagglehub (>=1.0.2,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+[dependency-groups]
+dev = [
+    "jupyter (>=1.1.1,<2.0.0)",
+    "ipykernel (>=7.3.0,<8.0.0)",
+    "pytest (>=9.1.1,<10.0.0)",
+    "ruff (>=0.16.8,<0.17.0)"
+]
