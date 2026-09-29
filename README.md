@@ -8,7 +8,7 @@
 
 Proyecto final desarrollado en **Talento Tech**, orientado a la clasificación de registros con y sin incendios forestales a partir de variables climáticas y geográficas de Estados Unidos.
 
-El trabajo recorre el proceso completo en un notebook: descarga del dataset, análisis exploratorio, limpieza, construcción de un pipeline de regresión logística y evaluación de sus resultados. El foco está en comprender el desbalance de clases y el equilibrio entre detectar incendios y generar falsas alarmas.
+El trabajo recorre el proceso completo en un notebook: descarga del dataset, análisis exploratorio, limpieza, construcción de pipelines y comparación de tres modelos de clasificación. El foco está en comprender el desbalance de clases y el equilibrio entre detectar incendios y generar falsas alarmas.
 
 📓 **[Ver el notebook completo](pipeline.ipynb)**
 
@@ -16,12 +16,12 @@ El trabajo recorre el proceso completo en un notebook: descarga del dataset, an�
 
 ## Objetivo
 
-Evaluar qué capacidad tiene un modelo de regresión logística para distinguir registros asociados a incendios forestales y analizar sus limitaciones mediante métricas que van más allá del accuracy.
+Comparar la capacidad de distintos modelos de clasificación para distinguir registros asociados a incendios forestales y analizar sus limitaciones mediante métricas que van más allá del accuracy.
 
 - Explorar la distribución y calidad de los datos.
-- Integrar el preprocesamiento y el modelo en un pipeline de scikit-learn.
-- Evaluar precisión, recall, F1-score y ROC-AUC.
-- Analizar cómo cambia el desempeño al modificar el umbral de decisión.
+- Integrar el mismo preprocesamiento y cada modelo en pipelines de scikit-learn.
+- Comparar regresión logística, árbol de decisión y Random Forest.
+- Evaluar accuracy, precisión, recall y F1-score para la clase positiva.
 
 ## Dataset
 
@@ -43,26 +43,24 @@ El CSV se descarga automáticamente al ejecutar el notebook por primera vez y se
 2. **Limpieza:** conversión de fechas y de la variable objetivo, eliminación de duplicados y revisión de registros con el valor `32767`.
 3. **Preparación:** creación de componentes de fecha y selección de 14 predictores.
 4. **Entrenamiento:** división estratificada en 70 % para entrenamiento y 30 % para prueba, con `random_state=42`.
-5. **Pipeline:** imputación por mediana, estandarización y regresión logística con ponderación balanceada de clases.
-6. **Evaluación:** reporte de clasificación, validación cruzada de cinco particiones, matriz de confusión, análisis de umbrales y curva ROC.
+5. **Pipelines:** imputación por mediana, estandarización y tres clasificadores con ponderación balanceada de clases.
+6. **Comparación inicial:** entrenamiento de regresión logística, árbol de decisión y Random Forest con el mismo conjunto de datos y las mismas métricas.
 
-## Resultados de la primera versión
+## Comparación inicial de modelos
 
-Valores aproximados documentados en el notebook para el conjunto de prueba, con umbral de decisión de **0,5**. Precisión, recall y F1 corresponden a la clase positiva: incendio.
+Resultados obtenidos sobre el conjunto de prueba. Precisión, recall y F1-score corresponden a la clase positiva: incendio (`1`).
 
-| Métrica | Resultado |
-|---|---:|
-| Accuracy | 58 % |
-| Precisión | 7,2 % |
-| Recall | 59,3 % |
-| F1-score | 12,9 % |
-| ROC-AUC | 0,619 |
+| Modelo | Accuracy | Precisión | Recall | F1-score |
+|---|---:|---:|---:|---:|
+| Regresión logística | 57,61 % | 7,23 % | 59,32 % | 12,90 % |
+| Árbol de decisión | **61,41 %** | **8,66 %** | 65,90 % | **15,30 %** |
+| Random Forest | 60,23 % | 8,46 % | **66,37 %** | 15,01 % |
 
-El modelo detecta cerca de seis de cada diez registros positivos, pero produce muchas falsas alarmas: sólo alrededor de siete de cada cien predicciones positivas son correctas. La validación cruzada obtiene valores similares de precisión, recall y F1.
+En esta primera comparación no hay un modelo claramente superior en todas las métricas. Random Forest alcanza el mayor recall y detecta la mayor proporción de incendios positivos, mientras que el árbol de decisión obtiene los mejores valores de accuracy, precisión y F1-score.
 
-Con un umbral de 0,3, el recall aumenta aproximadamente al 98,5 %, mientras que la precisión cae al 5,5 %. Esto muestra el costo de priorizar la detección.
+La diferencia de recall entre ambos modelos es de sólo `0,47` puntos porcentuales. Por eso todavía no es suficiente para elegir un modelo definitivo: falta analizar su estabilidad y observar con mayor detalle los falsos positivos y falsos negativos.
 
-**El principal aprendizaje es metodológico:** en un dataset desbalanceado, una sola métrica no alcanza para evaluar un modelo. Esta primera versión sirve como punto de partida para futuras comparaciones; su rendimiento actual no es adecuado para un sistema operativo de alertas.
+**El principal aprendizaje es metodológico:** en un dataset desbalanceado, una sola métrica no alcanza para evaluar un modelo. Los tres clasificadores mantienen una precisión muy baja para la clase positiva, por lo que su rendimiento actual no es adecuado para un sistema operativo de alertas.
 
 ## Estructura del repositorio
 
@@ -103,7 +101,7 @@ machine-learning-wildfires/
 - **[Git](https://git-scm.com/downloads)** para clonar el repositorio.
 - Conexión a Internet para instalar dependencias y descargar el dataset por primera vez.
 
-> **Recursos:** el archivo tiene aproximadamente 1 GB. Reservá varios GB de espacio libre para el dataset y el entorno virtual. El notebook carga todos los registros y crea copias y transformaciones en memoria, por lo que puede consumir varios GB de RAM. El tiempo de ejecución depende del equipo; la validación cruzada realiza 15 entrenamientos adicionales.
+> **Recursos:** el archivo tiene aproximadamente 1 GB. Reservá varios GB de espacio libre para el dataset y el entorno virtual. El notebook carga todos los registros y crea copias y transformaciones en memoria, por lo que puede consumir varios GB de RAM. El tiempo de ejecución depende del equipo y aumenta al entrenar los tres modelos.
 
 ### 1. Clonar el repositorio
 
@@ -161,19 +159,20 @@ Referencias: [uso básico de Poetry](https://python-poetry.org/docs/basic-usage/
 
 ## Alcance y limitaciones
 
-- **Modelo inicial:** esta versión evalúa regresión logística. Sus resultados no permiten concluir que otros algoritmos o nuevas variables vayan a rendir igual.
+- **Comparación inicial:** los resultados actuales provienen de una única división entre entrenamiento y prueba y todavía deben validarse con técnicas adicionales.
 - **Desbalance de clases:** ponderar las clases durante el entrenamiento no garantiza una buena precisión ni elimina las falsas alarmas.
 - **Validación temporal y geográfica pendiente:** la división actual es aleatoria y estratificada; no mide por separado el desempeño en fechas futuras o ubicaciones no vistas.
-- **Exploración de umbrales:** se realiza sobre el conjunto de prueba. Una futura selección del umbral debería usar un conjunto de validación y reservar el test para la evaluación final.
+- **Uso del conjunto de prueba:** esta etapa lo utiliza para una comparación exploratoria. Una selección formal debería usar validación y reservar el test para la evaluación final.
 - **Versionado del dataset:** las dependencias están fijadas en `poetry.lock`, pero la descarga solicita la versión disponible en Kaggle sin fijar una versión concreta. Si la fuente cambia, los resultados pueden variar.
 
 ## Próximos pasos
 
-La rama `main` reúne la primera versión documentada. El desarrollo de la comparación de modelos continúa en `feat/model-comparison`.
+La rama `main` conserva la primera versión basada en regresión logística. Esta rama incorpora la comparación inicial de modelos y continuará ampliando su evaluación.
 
-- Comparar diferentes clasificadores con un protocolo de evaluación común.
-- Ampliar el análisis de precisión y recall con métricas apropiadas para clases desbalanceadas.
-- Revisar la selección de variables y la validación temporal o geográfica.
+- Incorporar reportes de clasificación y matrices de confusión para cada modelo.
+- Aplicar validación cruzada y comparar la estabilidad de los resultados.
+- Agregar curvas ROC y precisión-recall junto con AUC y average precision.
+- Revisar la selección de variables y considerar una validación temporal o geográfica.
 - Extraer funciones reutilizables del notebook y agregar pruebas.
 
 ## Licencia
