@@ -1,3 +1,5 @@
+> **Rama experimental:** en esta rama se exploran mejoras sobre la comparación inicial de modelos: incorporar más variables climáticas, evaluar un modelo de gradient boosting y ajustar hiperparámetros. El recall de la clase positiva se mantiene como métrica principal.
+
 # 🔥 Predicción de Incendios Forestales en EE.UU.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
