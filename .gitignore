@@ -136,6 +136,7 @@ ENV/
 env.bak/
 venv.bak/
 data/
+models/*.joblib
 
 # Spyder project settings
 .spyderproject
